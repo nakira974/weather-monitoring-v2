@@ -11,13 +11,12 @@ import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController("weather_forecasts")
 public class WeatherforecastController {
@@ -31,11 +30,15 @@ public class WeatherforecastController {
         _dbContext = dbContext;
     }
 
+    @GetMapping("/")
+    public Map<String, String> home(@AuthenticationPrincipal DefaultOAuth2User user) {
+        return Map.of("message", "You are logged in, " + user.getName() + "!");
+    }
 
-    @GetMapping(value = "/weather/{city}/{country}")
+    @GetMapping(value = "/weather")
     @ResponseStatus(code = HttpStatus.OK, reason = "OK,")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
-    public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@PathVariable String city, @PathVariable String country){
+    public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestPart String city, @RequestPart String country){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
         var result = new ArrayList<Weatherforecast>();
         try{

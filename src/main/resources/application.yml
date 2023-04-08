@@ -1,0 +1,37 @@
+server:
+  port: 8083
+
+keycloak-server:
+  uri: http://localhost:8080/auth/realms/weathermonitoring
+  openid-uri: ${keycloak-server.uri}/protocol/openid-connect
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          weather-monitoring-v2:
+            provider: keycloak
+            client-id: login-app
+            client-secret: ${TEST_CLIENT_SECRET:eyJhbGciOiJFUzM4NCIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJqdnlUaDRfUkRKenZQZzlTc3lObmpHSWFsQ1ByUlM5UVN2SzFHWDl3ODRvIn0.eyJleHAiOjE2ODA5NzQ0OTYsImlhdCI6MTY4MDk3NDE5NiwianRpIjoiMjA3NjgyYWEtMzdmMi00YTg4LWJlM2MtODZkMWMyNTdjMmQzIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL3dlYXRoZXJtb25pdG9yaW5nIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjNkYWM0NGRmLTQ3ZTMtNGZkZC1iNjA4LTA3YzhkNzU0ZGNjOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvZ2luLWFwcCIsInNlc3Npb25fc3RhdGUiOiJmZjU3ZmUzMS04YzlkLTRkZDgtODVkNy04MWY5MmQxNjkyOGQiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiTWF4aW1lIExvdWtoYWwiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJuYWtpcmE5NzQiLCJnaXZlbl9uYW1lIjoiTWF4aW1lIiwiZmFtaWx5X25hbWUiOiJMb3VraGFsIiwiZW1haWwiOiJtYXhpbWUubG91a2hhbEBnbWFpbC5jb20ifQ.DBa_mTJazp5tL94RuDcr2xZ5zISxF6rB2mOB0n8Xy30CnoWkMfnpd-7Xb_WLDXIBgqzPhZ2s3YC63inhtK-QhO99k-HNw-_8cpvxoRZpK5W0_c2FSeLW1l8eduBH8W55}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: resource:read
+        provider:
+          keycloak:
+            # Configure the provider with keycloak
+            authorization-uri: ${keycloak-server.openid-uri}/auth
+            token-uri: ${keycloak-server.openid-uri}/token
+            user-info-uri: ${keycloak-server.openid-uri}/userinfo
+            user-info-authentication-method: client_secret_basic
+            jwk-set-uri: ${keycloak-server.openid-uri}/certs
+            # Alternatively, set issuer-uri (replaces above settings) to use ${keycloak-server.uri}/.well-known/openid-configuration
+            # to auto-configure OpenID Connect on startup.
+            # issuer-uri: ${keycloak-server.uri}
+            # This is required in either case to inform Spring Security about keycloak's username
+            user-name-attribute: preferred_username
+
+logging:
+  level:
+    org.springframework.security: trace
