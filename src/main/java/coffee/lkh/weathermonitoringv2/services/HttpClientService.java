@@ -43,7 +43,7 @@ public class HttpClientService implements IHttpClientService {
     }
 
     @Override
-    public Future<Optional<CityWeatherForecasts>> getForecastByCityAsync(String city, String country) {
+    public Future<Optional<CityWeatherForecasts>> getForecastByCityAsync(String city, String country, Optional<String> state) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(_baseUri)
                 .addConverterFactory(JacksonConverterFactory.create()) // or any other JSON converter you prefer
@@ -55,7 +55,12 @@ public class HttpClientService implements IHttpClientService {
             result = _executor.submit(() -> {
                 Optional<CityWeatherForecasts> taskResult = Optional.empty();
                 try {
-                    Call<CityWeatherForecasts> call = _weatherForecastsApi.getForecastByCity(_apiKey, city, country, "31");
+                    Call<CityWeatherForecasts> call;
+                    if(state.isEmpty())
+                        call = _weatherForecastsApi.getForecastByCityAndCountry(_apiKey, city, country, "16");
+                    else
+                        call = _weatherForecastsApi.getForecastByCityAndCountryAndState(_apiKey, city, country, state.get(), "16");
+
                     Response<CityWeatherForecasts> response = call.execute();
                     if (response.isSuccessful()) {
                         taskResult = Optional.ofNullable(response.body());

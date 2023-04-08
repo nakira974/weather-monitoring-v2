@@ -40,7 +40,7 @@ public class ApplicationDbContext implements IDbContext {
         Future<Boolean> result = null;
         try{
             result = _executor.submit(() -> {
-                Boolean isInserted = Boolean.FALSE;
+                var isInserted = Boolean.FALSE;
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
                     for(var data : forecasts.getData()){
@@ -79,6 +79,34 @@ public class ApplicationDbContext implements IDbContext {
             });
         }catch (Exception ex){
             _logger.error("Thread pool executor error in IDbService implementation");
+        }
+        return result;
+    }
+
+    @Override
+    public Future<Boolean> deleteForecastsAsync(String city, String country, Optional<String> state) {
+        Future<Boolean> result = null;
+        try{
+            result = _executor.submit(() -> {
+                var isDeleted = Boolean.FALSE;
+                try {
+
+                    var registeredEntity = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
+                    if(registeredEntity.isEmpty()) throw  new Exception("Could not find entity to delete !");
+                    registeredEntity.get().getData().forEach(datum -> {
+                        _weatherRepository.delete(datum.getWeather());
+                        _datumRepository.delete(datum);
+                    });
+                    _weatherForecastsRepository.delete(registeredEntity.get());
+                    isDeleted = Boolean.TRUE;
+                }catch (Exception ex){
+                    _logger.error("Error while deleting entity!");
+                }
+                return isDeleted;
+            });
+
+            }catch (Exception ex){
+            _logger.warn("Thread pool executor in IDbService");
         }
         return result;
     }

@@ -8,8 +8,15 @@ import retrofit2.http.Query;
 public interface WeatherForecastsApi {
 
     @POST("forecast/daily")
-    Call<CityWeatherForecasts> getForecastByCity(@Query("key") String apiKey,
-                                                 @Query("city") String city,
-                                                 @Query("country") String country,
-                                                 @Query("days") String days);
+    Call<CityWeatherForecasts> getForecastByCityAndCountry(@Query("key") String apiKey,
+                                                           @Query("city") String city,
+                                                           @Query("country") String country,
+                                                           @Query("days") String days);
+
+    @POST("forecast/daily")
+    Call<CityWeatherForecasts> getForecastByCityAndCountryAndState(@Query("key") String apiKey,
+                                                                   @Query("city") String city,
+                                                                   @Query("country") String country,
+                                                                   @Query("state") String state,
+                                                                   @Query("days") String days);
 }

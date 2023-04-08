@@ -9,5 +9,5 @@ import java.util.concurrent.Future;
 
 
 public interface IHttpClientService {
-    Future<Optional<CityWeatherForecasts>> getForecastByCityAsync(String city, String country);
+    Future<Optional<CityWeatherForecasts>> getForecastByCityAsync(String city, String country, Optional<String> state);
 }

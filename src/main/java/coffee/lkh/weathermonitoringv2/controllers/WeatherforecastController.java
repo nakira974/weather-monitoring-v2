@@ -31,25 +31,41 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
+    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public Map<String, String> home(@AuthenticationPrincipal DefaultOAuth2User user) {
         return Map.of("message", "You are logged in, " + user.getName() + "!");
     }
 
+    @DeleteMapping("/weather")
+    public ResponseEntity<String> deleteWeatherInfo(@RequestParam  String city, @RequestParam  String country, @RequestParam Optional<String> state){
+        try {
+            var isDelete = _dbContext.deleteForecastsAsync(city, country, state).get();
+            if(isDelete)
+                return new ResponseEntity<String>(String.format("Entity %s %s has been deleted", city, country), HttpStatusCode.valueOf(204));
+            else
+                throw new Exception();
+        }catch (Exception ex){
+            throw  new WeatherforecastsNotFoundException(String.format("Could not delete weather data for city=%s, country=%s\nCAUSE: %s", city, country, ex.getMessage()));
+        }
+    }
+
     @GetMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "OK,")
+    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
-    public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestPart String city, @RequestPart String country){
+    public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
         var result = new ArrayList<Weatherforecast>();
         try{
             CityWeatherForecasts forecasts;
             if(fetchFromMongoTask.get().isEmpty()){
-                var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country).get();
+                var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country, state).get();
                 if(fetchFromApiTask.isEmpty()) throw new Exception();
                 forecasts = fetchFromApiTask.get();
                 if(!_dbContext.insertForecastsAsync(forecasts).get()) throw new Exception("Database insert error!");
             }else
                 forecasts = fetchFromMongoTask.get().get();
+
 
             forecasts.getData().forEach(x->{
                 var forecast = new Weatherforecast();
@@ -60,7 +76,7 @@ public class WeatherforecastController {
                 result.add(forecast);
             });
 
-            return new ResponseEntity<>(result, HttpStatusCode.valueOf(200));
+            return new ResponseEntity<List<Weatherforecast>>(result, HttpStatusCode.valueOf(200));
         }catch (Exception ex){
             throw  new WeatherforecastsNotFoundException(String.format("Could not fetch weather data for city=%s, country=%s\nCAUSE: %s", city, country, ex.getMessage()));
         }

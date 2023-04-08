@@ -8,6 +8,8 @@ import java.util.concurrent.Future;
 
 public interface IDbContext {
 
+
     public Future<Boolean> insertForecastsAsync(CityWeatherForecasts forecasts);
+    public Future<Boolean> deleteForecastsAsync(String city, String country, Optional<String> state);
     public Future<Optional<CityWeatherForecasts>> selectForecastsAsync(String city, String country,Optional<String> state);
 }
