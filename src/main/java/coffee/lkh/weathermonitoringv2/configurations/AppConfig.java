@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.config;
+package coffee.lkh.weathermonitoringv2.configurations;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;

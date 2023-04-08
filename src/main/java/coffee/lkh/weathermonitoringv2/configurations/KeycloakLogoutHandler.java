@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.config;
+package coffee.lkh.weathermonitoringv2.configurations;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
