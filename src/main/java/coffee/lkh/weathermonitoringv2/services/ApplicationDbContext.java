@@ -44,13 +44,14 @@ public class ApplicationDbContext implements IDbContext {
         try{
 
             result = _executor.submit(() -> {
-                var cityInfo = _httpClientService.getCityInfoAsync(forecasts.getLocation());
+                var fetchCityInfoTask = _httpClientService.getCityInfoAsync(new double[]{Double.parseDouble(forecasts.getLon()), Double.parseDouble(forecasts.getLat())});
+                var cityInfo = fetchCityInfoTask.get();
                 double radius = 15;
                 var isInserted = Boolean.FALSE;
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
                     //Avant le foreach un peu d'opti je recupère mon future
-                    if(cityInfo.get().isPresent()) radius = cityInfo.get().get().getDistance();
+                    if(cityInfo.isPresent()) radius = cityInfo.get().getDistance();
                     for(var data : forecasts.getData()){
                         //We linked our data by date and location in addition to link the ID in mongodb...
                         data.getWeather().setMeasureDate(data.getDatetime());

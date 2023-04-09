@@ -52,7 +52,7 @@ public class HttpClientService implements IHttpClientService {
     private final ThreadPoolExecutor _executor;
     public HttpClientService() {
         _logger = LoggerFactory.getLogger(IHttpClientService.class);
-        _executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        _executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 
     @Override
@@ -75,19 +75,23 @@ public class HttpClientService implements IHttpClientService {
                         call = _weatherBitApi.getForecastByCityAndCountryAndState(_weatherBitApiKey, city, country, state.get(), "16");
 
                     Response<CityWeatherForecasts> response = call.execute();
+
                     if (response.isSuccessful()) {
                         taskResult = Optional.ofNullable(response.body());
                     } else {
-                        throw new WeatherforecastsNotFoundException("Response unsuccessful!");
+                        throw new WeatherforecastsNotFoundException(String.format("%d %s", response.code(), response.message()));
                     }
-                } catch (IOException ex) {
+                } catch (WeatherforecastsNotFoundException ex) {
                     _logger.error(String.format("Can't fetch %s %s weather forecasts!", city, country));
+                    throw ex;
                 }
 
                 return taskResult;
             });
         } catch (Exception ex) {
             _logger.error("Thread pool executor error in IHttpClientService implementation !");
+            if(ex.getClass().equals(WeatherforecastsNotFoundException.class))
+                throw ex;
         }
         return result;
     }
@@ -96,7 +100,24 @@ public class HttpClientService implements IHttpClientService {
     public Future<Optional<CityInfo>> getCityInfoAsync(double[] location) {
         Future<Optional<CityInfo>> result = null;
         try{
-            _geocodeApi.getCityInfo(_cityInfoRapidApiHost, _cityInfoApiKey, 5000, location[0], location[1]);
+            result = _executor.submit(() -> {
+                Optional<CityInfo> taskResult = Optional.empty();
+                try {
+                    Call<CityInfo> call;
+                    call = _geocodeApi.getCityInfo(_cityInfoRapidApiHost, _cityInfoApiKey, 15000,  location[0], location[1]);
+                    _logger.warn(String.format("Fetched longitude:%f latitude%f city information!", location[0], location[1] ));
+                    Response<CityInfo> response = call.execute();
+                    if (response.isSuccessful()) {
+                        taskResult = Optional.ofNullable(response.body());
+                    } else {
+                        throw new WeatherforecastsNotFoundException(String.format("%d %s", response.code(), response.message()));
+                    }
+                } catch (IOException ex) {
+                    _logger.error(String.format("Can't fetch longitude:%f latitude%f city information!", location[0], location[1] ));
+                }
+
+                return taskResult;
+            });
         }catch (Exception ex){
             _logger.error("Thread pool executor error in IHttpClientService implementation !");
         }

@@ -7,6 +7,7 @@ import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.rapidapi.geocode.
 
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 public interface IHttpClientService {
