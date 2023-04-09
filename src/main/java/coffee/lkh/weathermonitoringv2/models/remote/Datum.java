@@ -3,15 +3,21 @@ package coffee.lkh.weathermonitoringv2.models.remote;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.*;
 import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
+import org.springframework.data.mongodb.core.mapping.TimeSeries;
 import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "datum")
+@TimeSeries(collation = "datum", timeField = "forecast_date" )
+@CompoundIndexes({
+        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
+})
 public class Datum{
 
     public String getId() {
@@ -29,16 +35,19 @@ public class Datum{
         this.ts = ts; }
     String ts;
     @JsonProperty("timestamp_local")
-    public Date getTimestamp_local() {
+    public Date getLocalMeasureDate() {
         return this.timestamp_local; }
-    public void setTimestamp_local(Date timestamp_local) {
+    public void setLocalMeasureDate(Date timestamp_local) {
         this.timestamp_local = timestamp_local; }
+
+    @Transient
     Date timestamp_local;
     @JsonProperty("timestamp_utc")
-    public Date getTimestamp_utc() {
+    public Date getMeasureDate() {
         return this.timestamp_utc; }
-    public void setTimestamp_utc(Date timestamp_utc) {
+    public void setMeasureDate(Date timestamp_utc) {
         this.timestamp_utc = timestamp_utc; }
+    @Transient
     Date timestamp_utc;
     @JsonProperty("datetime")
     public Date  getDatetime() {
@@ -46,6 +55,8 @@ public class Datum{
 
     public void setDatetime(Date  datetime) {
         this.datetime = datetime; }
+
+    @Field("forecast_date")
     Date  datetime;
     @JsonProperty("snow")
     public double getSnow() {
@@ -249,4 +260,15 @@ public class Datum{
 
     @Field("wind_cdir_full")
     String wind_cdir_full;
+
+    public double[] getLocation() {
+        return location;
+    }
+
+    public void setLocation(String longitude, String latitude) {
+        this.location = new double[]{Double.parseDouble(longitude), Double.parseDouble(latitude)};
+    }
+
+    @Field("location")
+    public double[] location;
 }

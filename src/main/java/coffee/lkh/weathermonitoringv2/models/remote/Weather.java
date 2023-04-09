@@ -3,12 +3,20 @@ package coffee.lkh.weathermonitoringv2.models.remote;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.TimeSeries;
+
+import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "weather")
+@TimeSeries(collation = "weather", timeField = "forecast_date" )
+@CompoundIndexes({
+        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
+})
 public class Weather{
     public String getId() {
         return id;
@@ -40,4 +48,23 @@ public class Weather{
 
     @Field("description")
     String description;
+
+    public double[] getLocation() {
+        return location;
+    }
+
+    public void setLocation(String longitude, String latitude) {
+        this.location = new double[]{Double.parseDouble(longitude), Double.parseDouble(latitude)};
+    }
+
+    @Field("location")
+    public double[] location;
+
+    public Date getMeasureDate() {
+        return this.forecast_date; }
+    public void setMeasureDate(Date timestamp_utc) {
+        this.forecast_date = timestamp_utc; }
+    @Field("forecast_date")
+    Date forecast_date;
+
 }

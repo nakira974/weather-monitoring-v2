@@ -1,6 +1,5 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.Weatherforecast;
 import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.models.remote.Datum;
 import coffee.lkh.weathermonitoringv2.repositories.IDatumRepository;
@@ -36,7 +35,7 @@ public class ApplicationDbContext implements IDbContext {
         _executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 
-    public Future<Boolean> insertForecastsAsync(CityWeatherForecasts forecasts){
+    public Future<Boolean> insertOrUpdateForecastsAsync(CityWeatherForecasts forecasts){
         Future<Boolean> result = null;
         try{
             result = _executor.submit(() -> {
@@ -44,15 +43,22 @@ public class ApplicationDbContext implements IDbContext {
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
                     for(var data : forecasts.getData()){
-                        var registeredWeather = _weatherRepository.findDistinctByCode(data.getWeather().getCode());
+                        //We linked our data by date and location in addition to link the ID in mongodb...
+                        data.getWeather().setMeasureDate(data.getDatetime());
+                        data.getWeather().setLocation(forecasts.getLon(), forecasts.getLat());
+                        data.setLocation(forecasts.getLon(), forecasts.getLat());
+                        //Check if entities are still existing
+                        var registeredWeather = _weatherRepository.findDistinctByLocationAndForecastDate(data.getWeather().getLocation()[0], data.getWeather().getLocation()[1],data.getWeather().getMeasureDate());
                         data.setWeather(Objects.requireNonNullElseGet(registeredWeather, () -> _weatherRepository.save(data.getWeather())));
-                        var registeredData = _datumRepository.findDistinctByWeatherAndDate(data.getWeather(), data.getDatetime());
+                        var registeredData = _datumRepository.findDistinctByLocationAndForecastDate(data.getLocation()[0], data.getLocation()[1], data.getMeasureDate());
                         if(registeredData == null)forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);
                     forecasts.setData(insertedDatum);
+                    //Check if a city doesn't exist in our database
                     var registeredCityForecasts = _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(
                             forecasts.getCity_name(), forecasts.getCountry_code(), forecasts.getState_code());
+                    //If the city is uknown then save it
                     if(registeredCityForecasts == null){
                         forecasts.setLocation();
                         registeredCityForecasts=  _weatherForecastsRepository.save(forecasts);
@@ -61,7 +67,9 @@ public class ApplicationDbContext implements IDbContext {
                                 registeredCityForecasts.getCountry_code(),
                                 registeredCityForecasts.getState_code()));
 
-                    }else{
+                    }
+                    //Else if city is already stored, we just update it (datum ids -> each linked to a weather id)
+                    else{
                         var oldData = registeredCityForecasts.getData();
                         oldData.addAll(forecasts.getData());
                         _weatherForecastsRepository.save(registeredCityForecasts);

@@ -3,6 +3,7 @@ package coffee.lkh.weathermonitoringv2.controllers;
 
 import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import coffee.lkh.weathermonitoringv2.models.Weatherforecast;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
 import java.util.*;
 
 @RestController("weather_forecasts")
@@ -62,23 +62,47 @@ public class WeatherforecastController {
                 var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country, state).get();
                 if(fetchFromApiTask.isEmpty()) throw new Exception();
                 forecasts = fetchFromApiTask.get();
-                if(!_dbContext.insertForecastsAsync(forecasts).get()) throw new Exception("Database insert error!");
+                if(!_dbContext.insertOrUpdateForecastsAsync(forecasts).get()) throw new Exception("Database insert error!");
             }else
                 forecasts = fetchFromMongoTask.get().get();
 
 
-            forecasts.getData().forEach(x->{
-                var forecast = new Weatherforecast();
-                forecast.Date = x.getDatetime();
-                forecast.Summary = x.getWeather().getDescription();
-                forecast.TemperatureF = x.getTemp();
-                forecast.TemperatureC = (x.getTemp()-32) *(5/9);
-                result.add(forecast);
-            });
-
-            return new ResponseEntity<List<Weatherforecast>>(result, HttpStatusCode.valueOf(200));
+            return getListResponseEntity(result, forecasts);
         }catch (Exception ex){
             throw  new WeatherforecastsNotFoundException(String.format("Could not fetch weather data for city=%s, country=%s\nCAUSE: %s", city, country, ex.getMessage()));
         }
+    }
+
+    @PatchMapping(value = "/weather")
+    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly")
+    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
+    public ResponseEntity<List<Weatherforecast>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
+        var result = new ArrayList<Weatherforecast>();
+        try{
+            CityWeatherForecasts forecasts;
+            var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country, state).get();
+            if(fetchFromApiTask.isEmpty()) throw new Exception();
+            forecasts = fetchFromApiTask.get();
+            if(!_dbContext.insertOrUpdateForecastsAsync(forecasts).get()) throw new Exception("Database update error!");
+
+
+            return getListResponseEntity(result, forecasts);
+        }catch (Exception ex){
+            throw  new WeatherforecastsNotFoundException(String.format("Could not fetch weather data for city=%s, country=%s\nCAUSE: %s", city, country, ex.getMessage()));
+        }
+    }
+
+    @NotNull
+    private ResponseEntity<List<Weatherforecast>> getListResponseEntity(ArrayList<Weatherforecast> result, CityWeatherForecasts forecasts) {
+        forecasts.getData().forEach(x->{
+            var forecast = new Weatherforecast();
+            forecast.Date = x.getDatetime();
+            forecast.Summary = x.getWeather().getDescription();
+            forecast.TemperatureF = x.getTemp();
+            forecast.TemperatureC = (x.getTemp()-32) *(5/9);
+            result.add(forecast);
+        });
+
+        return new ResponseEntity<List<Weatherforecast>>(result, HttpStatusCode.valueOf(200));
     }
 }

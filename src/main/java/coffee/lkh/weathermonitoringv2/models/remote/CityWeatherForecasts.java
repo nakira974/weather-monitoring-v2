@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -17,6 +19,9 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(value = "city_weather_forecasts")
+@CompoundIndexes({
+        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
+})
 public class CityWeatherForecasts {
     public String getId() {
         return id;
@@ -57,7 +62,6 @@ public class CityWeatherForecasts {
         this.location = new double[]{Double.parseDouble(this.getLon()), Double.parseDouble(this.getLat())};
     }
 
-    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     @Field("location")
     public double[] location;
     @Field("country_code")
@@ -68,7 +72,6 @@ public class CityWeatherForecasts {
     public void setLat(String lat) {
         this.lat = lat; }
     @Transient
-    @Field("latitude")
     String lat;
     @JsonProperty("lon")
     public String getLon() {
@@ -76,7 +79,6 @@ public class CityWeatherForecasts {
     public void setLon(String lon) {
         this.lon = lon; }
     @Transient
-    @Field("longitude")
     String lon;
     @JsonProperty("timezone")
     public String getTimezone() {
