@@ -51,7 +51,7 @@ public class ApplicationDbContext implements IDbContext {
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
                     //Avant le foreach un peu d'opti je recupère mon future
-                    if(cityInfo.isPresent()) radius = cityInfo.get().getDistance();
+                    if(cityInfo.isPresent()) radius = cityInfo.get().stream().findFirst().orElseThrow().getDistance();
                     for(var data : forecasts.getData()){
                         //We linked our data by date and location in addition to link the ID in mongodb...
                         data.getWeather().setMeasureDate(data.getDatetime());

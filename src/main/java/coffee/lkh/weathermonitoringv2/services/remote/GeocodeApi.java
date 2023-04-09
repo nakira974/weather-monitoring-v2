@@ -7,10 +7,12 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Query;
 
+import java.util.List;
+
 public interface GeocodeApi {
 
     @GET("GetLargestCities")
-    Call<CityInfo> getCityInfo(
+    Call<List<CityInfo>> getCityInfo(
             @Header("X-RapidAPI-Host") String RapidApiHost,
             @Header("X-RapidAPI-Key") String RapidApiKey,
             @Query("range") int range,

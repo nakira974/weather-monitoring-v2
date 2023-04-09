@@ -74,7 +74,7 @@ public class WeatherforecastController {
     }
 
     @PatchMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly")
+    @ResponseStatus(code = HttpStatus.OK, reason = "Entity updated correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<Weatherforecast>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var result = new ArrayList<Weatherforecast>();

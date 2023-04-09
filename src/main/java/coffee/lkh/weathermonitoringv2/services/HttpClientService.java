@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -97,16 +98,21 @@ public class HttpClientService implements IHttpClientService {
     }
 
     @Override
-    public Future<Optional<CityInfo>> getCityInfoAsync(double[] location) {
-        Future<Optional<CityInfo>> result = null;
+    public Future<Optional<List<CityInfo>>> getCityInfoAsync(double[] location) {
+        Future<Optional<List<CityInfo>>> result = null;
         try{
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(_cityInfoBaseUri)
+                    .addConverterFactory(JacksonConverterFactory.create()) // or any other JSON converter you prefer
+                    .build();
+            _geocodeApi = retrofit.create(GeocodeApi.class);
             result = _executor.submit(() -> {
-                Optional<CityInfo> taskResult = Optional.empty();
+                Optional<List<CityInfo>> taskResult = Optional.empty();
                 try {
-                    Call<CityInfo> call;
+                    Call<List<CityInfo>> call;
                     call = _geocodeApi.getCityInfo(_cityInfoRapidApiHost, _cityInfoApiKey, 15000,  location[0], location[1]);
                     _logger.warn(String.format("Fetched longitude:%f latitude%f city information!", location[0], location[1] ));
-                    Response<CityInfo> response = call.execute();
+                    Response<List<CityInfo>> response = call.execute();
                     if (response.isSuccessful()) {
                         taskResult = Optional.ofNullable(response.body());
                     } else {

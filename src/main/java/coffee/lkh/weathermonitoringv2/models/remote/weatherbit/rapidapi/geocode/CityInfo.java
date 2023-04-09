@@ -1,7 +1,9 @@
 package coffee.lkh.weathermonitoringv2.models.remote.weatherbit.rapidapi.geocode;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CityInfo {
     @JsonProperty("Country")
     public String getCountry() {
