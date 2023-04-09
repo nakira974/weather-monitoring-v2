@@ -1,7 +1,7 @@
 package coffee.lkh.weathermonitoringv2.controllers;
 
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

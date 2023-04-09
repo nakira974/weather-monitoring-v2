@@ -1,10 +1,12 @@
 package coffee.lkh.weathermonitoringv2.services;
 
 import coffee.lkh.weathermonitoringv2.models.exceptions.WeatherforecastsNotFoundException;
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.rapidapi.geocode.CityInfo;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
 import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
-import coffee.lkh.weathermonitoringv2.services.remote.WeatherForecastsApi;
+import coffee.lkh.weathermonitoringv2.services.remote.GeocodeApi;
+import coffee.lkh.weathermonitoringv2.services.remote.WeatherBitApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,15 +29,26 @@ public class HttpClientService implements IHttpClientService {
     private final Logger _logger;
 
     @Value("${WEATHER_FORECASTS_API_KEY}")
-    private String _apiKey;
+    private String _weatherBitApiKey;
+
+    @Value("${CITY_INFO_API_KEY}")
+    private String _cityInfoApiKey;
 
     @Value("${WEATHER_FORECASTS_API_BASE_URI}")
-    private String _baseUri;
+    private String _weatherBitBaseUri;
+
+    @Value("${CITY_INFO_API_BASE_URI}")
+    private String _cityInfoBaseUri;
+
+    @Value("${CITY_INFO_RAPID_API_HOST}")
+    private String _cityInfoRapidApiHost;
+
 
     @Autowired
     ICityWeatherForecastsRepository _weatherForecastsRepository;
 
-    private WeatherForecastsApi _weatherForecastsApi;
+    private WeatherBitApi _weatherBitApi;
+    private GeocodeApi _geocodeApi;
     private final ThreadPoolExecutor _executor;
     public HttpClientService() {
         _logger = LoggerFactory.getLogger(IHttpClientService.class);
@@ -45,11 +58,11 @@ public class HttpClientService implements IHttpClientService {
     @Override
     public Future<Optional<CityWeatherForecasts>> getForecastByCityAsync(String city, String country, Optional<String> state) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(_baseUri)
+                .baseUrl(_weatherBitBaseUri)
                 .addConverterFactory(JacksonConverterFactory.create()) // or any other JSON converter you prefer
                 .build();
 
-        _weatherForecastsApi = retrofit.create(WeatherForecastsApi.class);
+        _weatherBitApi = retrofit.create(WeatherBitApi.class);
         Future<Optional<CityWeatherForecasts>> result = null;
         try {
             result = _executor.submit(() -> {
@@ -57,9 +70,9 @@ public class HttpClientService implements IHttpClientService {
                 try {
                     Call<CityWeatherForecasts> call;
                     if(state.isEmpty())
-                        call = _weatherForecastsApi.getForecastByCityAndCountry(_apiKey, city, country, "16");
+                        call = _weatherBitApi.getForecastByCityAndCountry(_weatherBitApiKey, city, country, "16");
                     else
-                        call = _weatherForecastsApi.getForecastByCityAndCountryAndState(_apiKey, city, country, state.get(), "16");
+                        call = _weatherBitApi.getForecastByCityAndCountryAndState(_weatherBitApiKey, city, country, state.get(), "16");
 
                     Response<CityWeatherForecasts> response = call.execute();
                     if (response.isSuccessful()) {
@@ -74,7 +87,18 @@ public class HttpClientService implements IHttpClientService {
                 return taskResult;
             });
         } catch (Exception ex) {
-            _logger.error(String.format("Can't fetch %s %s weather forecasts!", city, country));
+            _logger.error("Thread pool executor error in IHttpClientService implementation !");
+        }
+        return result;
+    }
+
+    @Override
+    public Future<Optional<CityInfo>> getCityInfoAsync(double[] location) {
+        Future<Optional<CityInfo>> result = null;
+        try{
+            _geocodeApi.getCityInfo(_cityInfoRapidApiHost, _cityInfoApiKey, 5000, location[0], location[1]);
+        }catch (Exception ex){
+            _logger.error("Thread pool executor error in IHttpClientService implementation !");
         }
         return result;
     }

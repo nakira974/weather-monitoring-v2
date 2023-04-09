@@ -1,11 +1,11 @@
 package coffee.lkh.weathermonitoringv2.services.remote;
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
 import retrofit2.Call;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
-public interface WeatherForecastsApi {
+public interface WeatherBitApi {
 
     @POST("forecast/daily")
     Call<CityWeatherForecasts> getForecastByCityAndCountry(@Query("key") String apiKey,

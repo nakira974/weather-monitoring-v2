@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.models.remote;
+package coffee.lkh.weathermonitoringv2.models.remote.weatherbit;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -14,9 +14,7 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "weather")
 @TimeSeries(collation = "weather", timeField = "forecast_date" )
-@CompoundIndexes({
-        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
-})
+@CompoundIndex(def = "{'location': '2dsphere'}")
 public class Weather{
     public String getId() {
         return id;

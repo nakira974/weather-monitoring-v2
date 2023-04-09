@@ -1,6 +1,6 @@
 package coffee.lkh.weathermonitoringv2.repositories;
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;

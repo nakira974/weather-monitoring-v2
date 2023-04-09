@@ -1,11 +1,12 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
-import coffee.lkh.weathermonitoringv2.models.remote.Datum;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.Datum;
 import coffee.lkh.weathermonitoringv2.repositories.IDatumRepository;
 import coffee.lkh.weathermonitoringv2.repositories.IWeatherRepository;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
+import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,14 @@ public class ApplicationDbContext implements IDbContext {
     final IWeatherRepository _weatherRepository;
     final IDatumRepository _datumRepository;
 
+    protected final IHttpClientService _httpClientService;
+
     private final ThreadPoolExecutor _executor;
 
-    public ApplicationDbContext(ICityWeatherForecastsRepository weatherForecastsRepository, IWeatherRepository weatherRepository, IDatumRepository datumRepository) {
+    public ApplicationDbContext(ICityWeatherForecastsRepository weatherForecastsRepository, IWeatherRepository weatherRepository, IDatumRepository datumRepository, IHttpClientService httpClientService) {
         _weatherRepository = weatherRepository;
         _datumRepository = datumRepository;
+        _httpClientService = httpClientService;
         _logger = LoggerFactory.getLogger(IDbContext.class);
         _weatherForecastsRepository = weatherForecastsRepository;
         _executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
@@ -38,19 +42,24 @@ public class ApplicationDbContext implements IDbContext {
     public Future<Boolean> insertOrUpdateForecastsAsync(CityWeatherForecasts forecasts){
         Future<Boolean> result = null;
         try{
+
             result = _executor.submit(() -> {
+                var cityInfo = _httpClientService.getCityInfoAsync(forecasts.getLocation());
+                double radius = 15;
                 var isInserted = Boolean.FALSE;
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
+                    //Avant le foreach un peu d'opti je recupère mon future
+                    if(cityInfo.get().isPresent()) radius = cityInfo.get().get().getDistance();
                     for(var data : forecasts.getData()){
                         //We linked our data by date and location in addition to link the ID in mongodb...
                         data.getWeather().setMeasureDate(data.getDatetime());
                         data.getWeather().setLocation(forecasts.getLon(), forecasts.getLat());
                         data.setLocation(forecasts.getLon(), forecasts.getLat());
                         //Check if entities are still existing
-                        var registeredWeather = _weatherRepository.findDistinctByLocationAndForecastDate(data.getWeather().getLocation()[0], data.getWeather().getLocation()[1],data.getWeather().getMeasureDate());
+                        var registeredWeather = _weatherRepository.findDistinctByLocationAndForecastDate(data.getWeather().getLocation()[0], data.getWeather().getLocation()[1],radius,data.getWeather().getMeasureDate());
                         data.setWeather(Objects.requireNonNullElseGet(registeredWeather, () -> _weatherRepository.save(data.getWeather())));
-                        var registeredData = _datumRepository.findDistinctByLocationAndForecastDate(data.getLocation()[0], data.getLocation()[1], data.getMeasureDate());
+                        var registeredData = _datumRepository.findDistinctByLocationAndForecastDate(data.getLocation()[0], data.getLocation()[1],radius, data.getMeasureDate());
                         if(registeredData == null)forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);

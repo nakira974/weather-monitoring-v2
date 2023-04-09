@@ -3,6 +3,7 @@ package coffee.lkh.weathermonitoringv2.configurations;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -24,12 +25,13 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
 @Import(OAuth2Config.class)
-public class SecurityConfig  {
-
+public class SecurityConfig {
 
     @Autowired
     private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
@@ -68,23 +70,35 @@ public class SecurityConfig  {
         return new DefaultOAuth2UserService();
     }
 
-    @Bean SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
 
-        http.authorizeRequests()
-                .requestMatchers("/login", "/error").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .oauth2Login()
-                .userInfoEndpoint()
-                .oidcUserService(oidcUserService)
-                .and().defaultSuccessUrl("/weather?city=Abbeville&country=US&state=LA").permitAll()
-                .and().logout().addLogoutHandler(keycloakLogoutHandler)
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID");
-
-        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+        http.authorizeRequests(authorizeRequests ->
+                        authorizeRequests.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                                .requestMatchers(
+                                        "/login",
+                                        "/error",
+                                        "/api/v2/api-docs",
+                                        "/swagger-ui.html",
+                                        "/favicon.ico",
+                                        "/callback/",
+                                        "/webjars/**",
+                                        "/error**",
+                                        "/oauth2/authorization/**"
+                                ).permitAll()
+                                .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2Login ->
+                        oauth2Login.userInfoEndpoint(userInfoEndpoint ->
+                                userInfoEndpoint.oidcUserService(oidcUserService)
+                        ).defaultSuccessUrl("/weather?city=Abbeville&country=US&state=LA")
+                )
+                .logout(logout -> logout.logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .addLogoutHandler(keycloakLogoutHandler))
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
         return http.build();
     }

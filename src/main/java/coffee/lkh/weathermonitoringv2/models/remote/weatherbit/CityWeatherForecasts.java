@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.models.remote;
+package coffee.lkh.weathermonitoringv2.models.remote.weatherbit;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -6,22 +6,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
-import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(value = "city_weather_forecasts")
-@CompoundIndexes({
-        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
-})
+@CompoundIndex(def = "{'location': '2dsphere'}")
 public class CityWeatherForecasts {
     public String getId() {
         return id;
