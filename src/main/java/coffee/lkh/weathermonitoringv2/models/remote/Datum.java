@@ -14,6 +14,10 @@ import java.util.Date;
 @Document(collection = "datum")
 public class Datum{
 
+    public String getId() {
+        return id;
+    }
+
     @Id
     @JsonIgnore
     private String id;

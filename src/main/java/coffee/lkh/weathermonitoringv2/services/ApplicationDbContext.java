@@ -94,10 +94,25 @@ public class ApplicationDbContext implements IDbContext {
                     var registeredEntity = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
                     if(registeredEntity.isEmpty()) throw  new Exception("Could not find entity to delete !");
                     registeredEntity.get().getData().forEach(datum -> {
-                        _weatherRepository.delete(datum.getWeather());
-                        _datumRepository.delete(datum);
+                        try{
+                            _weatherRepository.delete(datum.getWeather());
+                            _logger.warn(String.format("Entity 'weather' %s has been deleted", datum.getWeather().getId()));
+                        }catch (Exception ex){
+                            _logger.error(String.format("No 'weather' related entity has been deleted for ID : %s", datum.getId()));
+                        }
+                        try{
+                            _datumRepository.delete(datum);
+                            _logger.warn(String.format("Entity 'datum' %s has been deleted", datum.getId()));
+                        }catch (Exception ex){
+                            _logger.error(String.format("No 'datum' related entity has been deleted for ID : %s", registeredEntity.get().getId()));
+                        }
                     });
-                    _weatherForecastsRepository.delete(registeredEntity.get());
+                    try {
+                        _weatherForecastsRepository.delete(registeredEntity.get());
+                        _logger.warn(String.format("Entity 'weather' %s has been deleted", registeredEntity.get().getId()));
+                    }catch (Exception ex){
+                        _logger.error(String.format("No 'city_weather_forecasts' entity has been deleted for ID : %s", registeredEntity.get().getId()));
+                    }
                     isDeleted = Boolean.TRUE;
                 }catch (Exception ex){
                     _logger.error("Error while deleting entity!");

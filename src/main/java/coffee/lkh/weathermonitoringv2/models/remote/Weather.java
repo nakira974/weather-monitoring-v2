@@ -10,6 +10,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "weather")
 public class Weather{
+    public String getId() {
+        return id;
+    }
+
     @Id
     @JsonIgnore
     private String id;

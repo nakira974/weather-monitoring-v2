@@ -18,6 +18,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(value = "city_weather_forecasts")
 public class CityWeatherForecasts {
+    public String getId() {
+        return id;
+    }
+
     @Id
     @JsonIgnore
     private String id;
