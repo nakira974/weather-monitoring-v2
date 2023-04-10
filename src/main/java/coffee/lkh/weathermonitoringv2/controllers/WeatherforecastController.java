@@ -57,14 +57,15 @@ public class WeatherforecastController {
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
         var result = new ArrayList<Weatherforecast>();
         try{
+            var registeredEntity = fetchFromMongoTask.get();
             CityWeatherForecasts forecasts;
-            if(fetchFromMongoTask.get().isEmpty()){
+            if(registeredEntity.isEmpty()){
                 var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country, state).get();
                 if(fetchFromApiTask.isEmpty()) throw new Exception();
                 forecasts = fetchFromApiTask.get();
                 if(!_dbContext.insertOrUpdateForecastsAsync(forecasts).get()) throw new Exception("Database insert error!");
             }else
-                forecasts = fetchFromMongoTask.get().get();
+                forecasts = registeredEntity.get();
 
 
             return getListResponseEntity(result, forecasts);

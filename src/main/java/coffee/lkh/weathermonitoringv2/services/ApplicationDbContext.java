@@ -36,7 +36,7 @@ public class ApplicationDbContext implements IDbContext {
         _httpClientService = httpClientService;
         _logger = LoggerFactory.getLogger(IDbContext.class);
         _weatherForecastsRepository = weatherForecastsRepository;
-        _executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        _executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
     }
 
     public Future<Boolean> insertOrUpdateForecastsAsync(CityWeatherForecasts forecasts){
@@ -169,13 +169,16 @@ public class ApplicationDbContext implements IDbContext {
                 Optional<CityWeatherForecasts> forecasts = Optional.empty();
                 try{
                     forecasts = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
-              }  catch (Exception ex){
-                  _logger.error("Error while selecting entity!");
+                    if(forecasts.isPresent())
+                        _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", city, country, state.orElseGet(() -> "NULL") ));
+
+                }  catch (Exception ex){
+                  _logger.error("\u001B[31m Error while selecting entity!\u001B[0m");
               }
                 return forecasts;
             });
         }catch (Exception ex){
-            _logger.warn("Thread pool executor in IDbService");
+            _logger.warn("\u001B[31m Thread pool executor in IDbService\u001B[0m");
         }
         return result;
     }
