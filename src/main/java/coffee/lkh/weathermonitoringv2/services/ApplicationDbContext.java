@@ -58,9 +58,20 @@ public class ApplicationDbContext implements IDbContext {
                         data.getWeather().setLocation(forecasts.getLon(), forecasts.getLat());
                         data.setLocation(forecasts.getLon(), forecasts.getLat());
                         //Check if entities are still existing
+                        var longitude = data.getWeather().getLocation()[0];
+                        var latitude = data.getWeather().getLocation()[1];
+                        ArrayList<Double> location = new ArrayList<Double>() {};
+                        location.add(longitude);
+                        location.add(latitude);
+                        _weatherRepository.findUniqueByForecastDateAndLocation(data.getWeather().getMeasureDate(), location , radius);
                         var registeredWeather = _weatherRepository.findDistinctByLocationAndForecastDate(data.getWeather().getLocation()[0], data.getWeather().getLocation()[1],radius,data.getWeather().getMeasureDate());
                         data.setWeather(Objects.requireNonNullElseGet(registeredWeather, () -> _weatherRepository.save(data.getWeather())));
-                        var registeredData = _datumRepository.findDistinctByLocationAndForecastDate(data.getLocation()[0], data.getLocation()[1],radius, data.getMeasureDate());
+                         longitude = data.getWeather().getLocation()[0];
+                         latitude = data.getWeather().getLocation()[1];
+                         location = new ArrayList<Double>() {};
+                         location.add(longitude);
+                         location.add(latitude);
+                        var registeredData = _datumRepository.findUniqueByForecastDateAndLocation(data.getMeasureDate(), location, radius);
                         if(registeredData == null)forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);
