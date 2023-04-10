@@ -169,8 +169,7 @@ public class ApplicationDbContext implements IDbContext {
                 Optional<CityWeatherForecasts> forecasts = Optional.empty();
                 try{
                     forecasts = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
-                    if(forecasts.isPresent())
-                        _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", city, country, state.orElseGet(() -> "NULL") ));
+                    forecasts.ifPresent(cityWeatherForecasts -> _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", cityWeatherForecasts.getCity_name(), cityWeatherForecasts.getCountry_code(), cityWeatherForecasts.getState_code())));
 
                 }  catch (Exception ex){
                   _logger.error("\u001B[31m Error while selecting entity!\u001B[0m");
