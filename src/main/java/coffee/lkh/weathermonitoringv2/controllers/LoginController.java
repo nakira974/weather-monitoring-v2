@@ -36,7 +36,7 @@ public class LoginController {
         String accessToken = authorizedClient.getAccessToken().getTokenValue();
 
         String redirectUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/")
+                .path("/login-callback")
                 .toUriString();
 
         return "redirect:" + redirectUrl;

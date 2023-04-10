@@ -1,6 +1,6 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
 import coffee.lkh.weathermonitoringv2.services.base.IWeatherforecastService;
 import org.springframework.stereotype.Service;

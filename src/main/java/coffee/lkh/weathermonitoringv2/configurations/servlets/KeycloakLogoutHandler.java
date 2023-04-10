@@ -1,7 +1,8 @@
-package coffee.lkh.weathermonitoringv2.configurations;
+package coffee.lkh.weathermonitoringv2.configurations.servlets;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +26,11 @@ public class KeycloakLogoutHandler implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response,
-                       Authentication auth) {
+                       @NotNull Authentication auth) {
         logoutFromKeycloak((OidcUser) auth.getPrincipal());
     }
 
-    private void logoutFromKeycloak(OidcUser user) {
+    private void logoutFromKeycloak(@NotNull OidcUser user) {
         String endSessionEndpoint = user.getIssuer() + "/protocol/openid-connect/logout";
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromUriString(endSessionEndpoint)

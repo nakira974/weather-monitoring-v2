@@ -1,7 +1,7 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.Datum;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.Datum;
 import coffee.lkh.weathermonitoringv2.repositories.IDatumRepository;
 import coffee.lkh.weathermonitoringv2.repositories.IWeatherRepository;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;

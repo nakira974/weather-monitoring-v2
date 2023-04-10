@@ -20,6 +20,8 @@ repositories {
 }
 
 dependencies {
+    //fix static html page that don't load with thymeleaf ??
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.0.5'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.5'
     implementation 'org.keycloak:keycloak-spring-boot-starter:11.0.3'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'

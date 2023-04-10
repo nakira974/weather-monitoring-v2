@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.models.remote.weatherbit;
+package coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

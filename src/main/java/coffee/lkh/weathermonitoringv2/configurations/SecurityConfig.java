@@ -86,7 +86,7 @@ public class SecurityConfig {
                 "/oauth2/authorization/**").permitAll().anyRequest().authenticated().and().oauth2Login(oauth2Login ->
                 oauth2Login.userInfoEndpoint(userInfoEndpoint ->
                         userInfoEndpoint.oidcUserService(oidcUserService)
-                ).defaultSuccessUrl("/weather?city=Abbeville&country=US&state=LA")
+                ).defaultSuccessUrl("/weather-map")
         )
                 .logout(logout -> logout.logoutSuccessUrl("/")
                         .invalidateHttpSession(true)

@@ -1,7 +1,7 @@
 package coffee.lkh.weathermonitoringv2.repositories;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.Datum;
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.Weather;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.Datum;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.Weather;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 

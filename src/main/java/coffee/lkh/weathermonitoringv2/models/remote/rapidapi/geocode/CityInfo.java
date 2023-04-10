@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.models.remote.weatherbit.rapidapi.geocode;
+package coffee.lkh.weathermonitoringv2.models.remote.rapidapi.geocode;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

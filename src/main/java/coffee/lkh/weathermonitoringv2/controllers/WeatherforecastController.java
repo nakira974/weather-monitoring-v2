@@ -1,8 +1,10 @@
 package coffee.lkh.weathermonitoringv2.controllers;
 
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.Weatherforecast;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +33,9 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly", value = HttpStatus.ACCEPTED)
+    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
-    public Map<String, String> home(@AuthenticationPrincipal DefaultOAuth2User user) {
+    public Map<String, String> home(@NotNull @AuthenticationPrincipal DefaultOAuth2User user) {
         return Map.of("message", "You are logged in, " + user.getName() + "!");
     }
 
@@ -51,7 +53,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly", value = HttpStatus.ACCEPTED)
+    @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Entity selected correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
@@ -73,9 +75,13 @@ public class WeatherforecastController {
             throw  new WeatherforecastsNotFoundException(String.format("Could not fetch weather data for city=%s, country=%s\nCAUSE: %s", city, country, ex.getMessage()));
         }
     }
+    @RequestMapping("/weather-map")
+    public String login(){
+        return "pages/weather-map";
+    }
 
     @PatchMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "Entity updated correctly", value = HttpStatus.CREATED)
+    @ResponseStatus(code = HttpStatus.CREATED, reason = "Entity updated correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<Weatherforecast>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var result = new ArrayList<Weatherforecast>();
@@ -93,8 +99,9 @@ public class WeatherforecastController {
         }
     }
 
+    @Contract("_, _ -> new")
     @NotNull
-    private ResponseEntity<List<Weatherforecast>> getListResponseEntity(ArrayList<Weatherforecast> result, CityWeatherForecasts forecasts) {
+    private ResponseEntity<List<Weatherforecast>> getListResponseEntity(ArrayList<Weatherforecast> result, @NotNull CityWeatherForecasts forecasts) {
         forecasts.getData().forEach(x->{
             var forecast = new Weatherforecast();
             forecast.Date = x.getDatetime();

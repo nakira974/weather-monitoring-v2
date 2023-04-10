@@ -1,7 +1,7 @@
 package coffee.lkh.weathermonitoringv2.services.base;
 
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 
 public interface IWeatherforecastService {
 
