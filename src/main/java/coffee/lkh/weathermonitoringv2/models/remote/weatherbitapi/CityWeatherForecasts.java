@@ -31,7 +31,7 @@ public class CityWeatherForecasts {
         this.city_name = city_name; }
 
     @Field("city_name")
-    String city_name;
+    private String city_name;
     @JsonProperty("state_code")
     public String getState_code() {
         return this.state_code; }
@@ -40,7 +40,7 @@ public class CityWeatherForecasts {
 
     @Field("state_code")
     @JsonIgnore
-    String state_code;
+    private String state_code;
     @JsonProperty("country_code")
     public String getCountry_code() {
         return this.country_code; }
@@ -57,30 +57,30 @@ public class CityWeatherForecasts {
     }
 
     @Field("location")
-    public double[] location;
+    private double[] location;
     @Field("country_code")
-    String country_code;
+    private String country_code;
     @JsonProperty("lat")
     public String getLat() {
         return this.lat; }
     public void setLat(String lat) {
         this.lat = lat; }
     @Transient
-    String lat;
+    private String lat;
     @JsonProperty("lon")
     public String getLon() {
         return this.lon; }
     public void setLon(String lon) {
         this.lon = lon; }
     @Transient
-    String lon;
+    private String lon;
     @JsonProperty("timezone")
     public String getTimezone() {
         return this.timezone; }
     public void setTimezone(String timezone) {
         this.timezone = timezone; }
     @Field("timezone")
-    String timezone;
+    private String timezone;
     @JsonProperty("data")
     public List<Datum> getData() {
         return this.data; }
@@ -89,5 +89,5 @@ public class CityWeatherForecasts {
 
     @DBRef
     @Field("data")
-    List<Datum> data;
+    private List<Datum> data;
 }

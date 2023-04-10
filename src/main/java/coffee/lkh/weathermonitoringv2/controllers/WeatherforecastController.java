@@ -1,14 +1,13 @@
 package coffee.lkh.weathermonitoringv2.controllers;
 
 
-import coffee.lkh.weathermonitoringv2.models.Weatherforecast;
+import coffee.lkh.weathermonitoringv2.models.CityWeatherForecastDto;
 import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import coffee.lkh.weathermonitoringv2.models.Weatherforecast;
 import coffee.lkh.weathermonitoringv2.models.exceptions.WeatherforecastsNotFoundException;
 import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
 import org.springframework.http.HttpStatus;
@@ -55,9 +54,9 @@ public class WeatherforecastController {
     @GetMapping(value = "/weather")
     @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Entity selected correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
-    public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
+    public ResponseEntity<List<CityWeatherForecastDto>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
-        var result = new ArrayList<Weatherforecast>();
+        var result = new ArrayList<CityWeatherForecastDto>();
         try{
             var registeredEntity = fetchFromMongoTask.get();
             CityWeatherForecasts forecasts;
@@ -83,8 +82,8 @@ public class WeatherforecastController {
     @PatchMapping(value = "/weather")
     @ResponseStatus(code = HttpStatus.CREATED, reason = "Entity updated correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
-    public ResponseEntity<List<Weatherforecast>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
-        var result = new ArrayList<Weatherforecast>();
+    public ResponseEntity<List<CityWeatherForecastDto>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
+        var result = new ArrayList<CityWeatherForecastDto>();
         try{
             CityWeatherForecasts forecasts;
             var fetchFromApiTask = _httpClientService.getForecastByCityAsync(city ,country, state).get();
@@ -101,16 +100,21 @@ public class WeatherforecastController {
 
     @Contract("_, _ -> new")
     @NotNull
-    private ResponseEntity<List<Weatherforecast>> getListResponseEntity(ArrayList<Weatherforecast> result, @NotNull CityWeatherForecasts forecasts) {
+    private ResponseEntity<List<CityWeatherForecastDto>> getListResponseEntity(ArrayList<CityWeatherForecastDto> result, @NotNull CityWeatherForecasts forecasts) {
         forecasts.getData().forEach(x->{
-            var forecast = new Weatherforecast();
-            forecast.Date = x.getDatetime();
-            forecast.Summary = x.getWeather().getDescription();
-            forecast.TemperatureF = x.getTemp();
-            forecast.TemperatureC = (x.getTemp()-32) *(5/9);
+            new CityWeatherForecastDto(
+                    forecasts.getCity_name(),
+                    forecasts.getCountry_code(),
+                    forecasts.getState_code(),
+                    forecasts.getLocation(), )
+            var forecast = new CityWeatherForecastDto();
+            forecast.date = x.getDatetime();
+            forecast.summary = x.getWeather().getDescription();
+            forecast.temperatureF = x.getTemp();
+            forecast.temperatureC = (x.getTemp()-32) *(5/9);
             result.add(forecast);
         });
 
-        return new ResponseEntity<List<Weatherforecast>>(result, HttpStatusCode.valueOf(200));
+        return new ResponseEntity<List<CityWeatherForecastDto>>(result, HttpStatusCode.valueOf(200));
     }
 }

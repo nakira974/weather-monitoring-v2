@@ -30,14 +30,14 @@ public class Weather{
         this.icon = icon; }
 
     @Field("icon")
-    String icon;
+    private String icon;
     @JsonProperty("code")
     public String getCode() {
         return this.code; }
     public void setCode(String code) {
         this.code = code; }
     @Field("code")
-    String code;
+    private String code;
     @JsonProperty("description")
     public String getDescription() {
         return this.description; }
@@ -45,7 +45,7 @@ public class Weather{
         this.description = description; }
 
     @Field("description")
-    String description;
+    private String description;
 
     public double[] getLocation() {
         return location;
@@ -56,13 +56,13 @@ public class Weather{
     }
 
     @Field("location")
-    public double[] location;
+    private double[] location;
 
     public Date getMeasureDate() {
         return this.forecast_date; }
     public void setMeasureDate(Date timestamp_utc) {
         this.forecast_date = timestamp_utc; }
     @Field("forecast_date")
-    Date forecast_date;
+    private Date forecast_date;
 
 }
