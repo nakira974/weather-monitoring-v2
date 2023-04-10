@@ -31,7 +31,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly", value = HttpStatus.ACCEPTED)
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public Map<String, String> home(@AuthenticationPrincipal DefaultOAuth2User user) {
         return Map.of("message", "You are logged in, " + user.getName() + "!");
@@ -51,7 +51,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly")
+    @ResponseStatus(code = HttpStatus.OK, reason = "Entity selected correctly", value = HttpStatus.ACCEPTED)
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<Weatherforecast>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
@@ -75,7 +75,7 @@ public class WeatherforecastController {
     }
 
     @PatchMapping(value = "/weather")
-    @ResponseStatus(code = HttpStatus.OK, reason = "Entity updated correctly")
+    @ResponseStatus(code = HttpStatus.OK, reason = "Entity updated correctly", value = HttpStatus.CREATED)
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<Weatherforecast>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var result = new ArrayList<Weatherforecast>();

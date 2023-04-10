@@ -78,7 +78,8 @@ public class ApplicationDbContext implements IDbContext {
                          location.add(longitude);
                          location.add(latitude);
                         var registeredData = _datumRepository.findUniqueByForecastDateAndLocation(data.getMeasureDate(), location, radius);
-                        if(registeredData == null)forecastsToInsert.add(data);
+                       if(registeredData.isEmpty())
+                           forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);
                     forecasts.setData(insertedDatum);
