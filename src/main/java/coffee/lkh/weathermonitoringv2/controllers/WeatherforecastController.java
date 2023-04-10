@@ -102,16 +102,14 @@ public class WeatherforecastController {
     @NotNull
     private ResponseEntity<List<CityWeatherForecastDto>> getListResponseEntity(ArrayList<CityWeatherForecastDto> result, @NotNull CityWeatherForecasts forecasts) {
         forecasts.getData().forEach(x->{
-            new CityWeatherForecastDto(
+            var forecast = new CityWeatherForecastDto(
                     forecasts.getCity_name(),
                     forecasts.getCountry_code(),
                     forecasts.getState_code(),
-                    forecasts.getLocation(), )
-            var forecast = new CityWeatherForecastDto();
-            forecast.date = x.getDatetime();
-            forecast.summary = x.getWeather().getDescription();
-            forecast.temperatureF = x.getTemp();
-            forecast.temperatureC = (x.getTemp()-32) *(5/9);
+                    forecasts.getLocation(),
+                    x.getDatetime(),
+                    x.getTemp(),
+                    x.getWeather().getDescription());
             result.add(forecast);
         });
 
