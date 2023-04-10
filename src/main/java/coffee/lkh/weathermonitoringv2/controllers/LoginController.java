@@ -3,7 +3,10 @@ package coffee.lkh.weathermonitoringv2.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +26,21 @@ public class LoginController {
 
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String issuerUri;
+
+
+    @GetMapping("/login/oauth2/code/custom")
+    public String login(@AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
+        String clientRegistrationId = authentication.getAuthorizedClientRegistrationId();
+        OAuth2AuthorizedClient authorizedClient =
+                authorizedClientService.loadAuthorizedClient(clientRegistrationId, authentication.getName());
+        String accessToken = authorizedClient.getAccessToken().getTokenValue();
+
+        String redirectUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/")
+                .toUriString();
+
+        return "redirect:" + redirectUrl;
+    }
 
     @RequestMapping("/login")
     public String login(HttpServletRequest request, Model model) {

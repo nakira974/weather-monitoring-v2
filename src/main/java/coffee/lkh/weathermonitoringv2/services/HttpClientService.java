@@ -79,18 +79,20 @@ public class HttpClientService implements IHttpClientService {
 
                     if (response.isSuccessful()) {
                         taskResult = Optional.ofNullable(response.body());
+                        _logger.warn(String.format("\u001B[35m Fetched city: %s country: %s state: %S information! Think to save credits \u001B[0m", city, country, state.orElseGet(() -> "NULL") ));
+
                     } else {
                         throw new WeatherforecastsNotFoundException(String.format("%d %s", response.code(), response.message()));
                     }
                 } catch (WeatherforecastsNotFoundException ex) {
-                    _logger.error(String.format("Can't fetch %s %s weather forecasts!", city, country));
+                    _logger.error(String.format("\u001B[31m Can't fetch %s %s weather forecasts!\u001B[0m", city, country));
                     throw ex;
                 }
 
                 return taskResult;
             });
         } catch (Exception ex) {
-            _logger.error("Thread pool executor error in IHttpClientService implementation !");
+            _logger.error("\u001B[31m Thread pool executor error in IHttpClientService implementation !\u001B[0m");
             if(ex.getClass().equals(WeatherforecastsNotFoundException.class))
                 throw ex;
         }
@@ -111,21 +113,21 @@ public class HttpClientService implements IHttpClientService {
                 try {
                     Call<List<CityInfo>> call;
                     call = _geocodeApi.getCityInfo(_cityInfoRapidApiHost, _cityInfoApiKey, 15000,  location[0], location[1]);
-                    _logger.warn(String.format("Fetched longitude:%f latitude%f city information!", location[0], location[1] ));
                     Response<List<CityInfo>> response = call.execute();
                     if (response.isSuccessful()) {
                         taskResult = Optional.ofNullable(response.body());
+                        _logger.warn(String.format("\u001B[35m Fetched longitude: [%f] latitude: [%f] city information! Think to save credits \u001B[0m", location[0], location[1] ));
                     } else {
                         throw new WeatherforecastsNotFoundException(String.format("%d %s", response.code(), response.message()));
                     }
                 } catch (IOException ex) {
-                    _logger.error(String.format("Can't fetch longitude:%f latitude%f city information!", location[0], location[1] ));
+                    _logger.error(String.format("\u001B[31mCan't fetch longitude: [%f] latitude: [%f] city information! \u001B[0m", location[0], location[1] ));
                 }
 
                 return taskResult;
             });
         }catch (Exception ex){
-            _logger.error("Thread pool executor error in IHttpClientService implementation !");
+            _logger.error("\u001B[31m Thread pool executor error in IHttpClientService implementation !\u001B[0m");
         }
         return result;
     }
