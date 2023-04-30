@@ -1,7 +1,7 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.Datum;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.Datum;
 import coffee.lkh.weathermonitoringv2.repositories.IDatumRepository;
 import coffee.lkh.weathermonitoringv2.repositories.IWeatherRepository;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -78,7 +77,8 @@ public class ApplicationDbContext implements IDbContext {
                          location.add(longitude);
                          location.add(latitude);
                         var registeredData = _datumRepository.findUniqueByForecastDateAndLocation(data.getMeasureDate(), location, radius);
-                        if(registeredData == null)forecastsToInsert.add(data);
+                       if(registeredData.isEmpty())
+                           forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);
                     forecasts.setData(insertedDatum);
@@ -169,8 +169,7 @@ public class ApplicationDbContext implements IDbContext {
                 Optional<CityWeatherForecasts> forecasts = Optional.empty();
                 try{
                     forecasts = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
-                    if(forecasts.isPresent())
-                        _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", city, country, state.orElseGet(() -> "NULL") ));
+                    forecasts.ifPresent(cityWeatherForecasts -> _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", cityWeatherForecasts.getCity_name(), cityWeatherForecasts.getCountry_code(), cityWeatherForecasts.getState_code())));
 
                 }  catch (Exception ex){
                   _logger.error("\u001B[31m Error while selecting entity!\u001B[0m");

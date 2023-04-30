@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.configurations;
+package coffee.lkh.weathermonitoringv2.configurations.servlets;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

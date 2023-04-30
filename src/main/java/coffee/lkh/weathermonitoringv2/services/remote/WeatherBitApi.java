@@ -1,6 +1,6 @@
 package coffee.lkh.weathermonitoringv2.services.remote;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 import retrofit2.Call;
 import retrofit2.http.POST;
 import retrofit2.http.Query;

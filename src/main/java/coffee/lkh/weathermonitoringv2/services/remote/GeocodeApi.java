@@ -1,7 +1,6 @@
 package coffee.lkh.weathermonitoringv2.services.remote;
 
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.CityWeatherForecasts;
-import coffee.lkh.weathermonitoringv2.models.remote.weatherbit.rapidapi.geocode.CityInfo;
+import coffee.lkh.weathermonitoringv2.models.remote.rapidapi.geocode.CityInfo;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
