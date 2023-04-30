@@ -20,6 +20,10 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.9'
+
+    implementation 'org.springframework.data:spring-data-elasticsearch:5.0.4'
     //fix static html page that don't load with thymeleaf ??
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.0.5'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.5'
