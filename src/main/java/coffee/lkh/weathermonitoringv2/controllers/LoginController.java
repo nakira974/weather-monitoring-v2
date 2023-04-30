@@ -3,16 +3,10 @@ package coffee.lkh.weathermonitoringv2.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,16 +27,23 @@ public class LoginController {
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String issuerUri;
 
+
+    @GetMapping("/login/oauth2/code/custom")
+    public String login(@AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
+        String clientRegistrationId = authentication.getAuthorizedClientRegistrationId();
+        OAuth2AuthorizedClient authorizedClient =
+                authorizedClientService.loadAuthorizedClient(clientRegistrationId, authentication.getName());
+        String accessToken = authorizedClient.getAccessToken().getTokenValue();
+
+        String redirectUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/login-callback")
+                .toUriString();
+
+        return "redirect:" + redirectUrl;
+    }
+
     @RequestMapping("/login")
-    public String login(HttpServletRequest request, Model model,
-                        @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient,
-                        OAuth2AuthenticationToken authentication) {
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            // Redirect to home page if user is already authenticated
-            return "redirect:/";
-        }
-
+    public String login(HttpServletRequest request, Model model) {
         // Create a new CSRF token
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 
@@ -51,23 +52,15 @@ public class LoginController {
             model.addAttribute("_csrf", csrfToken);
         }
 
-        if (authorizedClient == null) {
-            // Construct the URL for the Keycloak login page
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(issuerUri)
-                    .path("/auth/realms/weathermonitoring/protocol/openid-connect/auth")
-                    .queryParam("response_type", "code")
-                    .queryParam("client_id", clientId)
-                    .queryParam("redirect_uri", getRedirectUri(request))
-                    .queryParam("scope", "openid");
+        // Construct the URL for the Keycloak login page
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(issuerUri)
+                .path("/auth/realms/weathermonitoring/protocol/openid-connect/auth")
+                .queryParam("response_type", "code")
+                .queryParam("client_id", clientId)
+                .queryParam("redirect_uri", getRedirectUri(request))
+                .queryParam("scope", "openid");
 
-            return "redirect:" + builder.buildAndExpand("weathermonitoring").toUriString();
-        } else {
-            // Save the authorized client details for the authenticated user
-            authorizedClientService.saveAuthorizedClient(authorizedClient, authentication);
-
-            // Redirect to the home page for authenticated users
-            return "redirect:/";
-        }
+        return "redirect:" + builder.buildAndExpand("weathermonitoring").toUriString();
     }
 
     private String getRedirectUri(HttpServletRequest request) {

@@ -1,6 +1,7 @@
 package coffee.lkh.weathermonitoringv2.services.base;
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
+
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
 
 import java.util.Optional;
 import java.util.concurrent.Future;

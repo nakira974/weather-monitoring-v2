@@ -73,31 +73,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
-        http.authorizeRequests(authorizeRequests ->
-                        authorizeRequests.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                                .requestMatchers(
-                                        "/login",
-                                        "/error",
-                                        "/api/v2/api-docs",
-                                        "/swagger-ui.html",
-                                        "/favicon.ico",
-                                        "/callback/",
-                                        "/webjars/**",
-                                        "/error**",
-                                        "/oauth2/authorization/**"
-                                ).permitAll()
-                                .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2Login ->
-                        oauth2Login.userInfoEndpoint(userInfoEndpoint ->
-                                userInfoEndpoint.oidcUserService(oidcUserService)
-                        ).defaultSuccessUrl("/weather?city=Abbeville&country=US&state=LA")
-                )
+
+        http.authorizeHttpRequests().requestMatchers(
+                "/login",
+                "/error",
+                "/api/v2/api-docs",
+                "/swagger-ui.html",
+                "/favicon.ico",
+                "/callback/",
+                "/webjars/**",
+                "/error**",
+                "/oauth2/authorization/**").permitAll().anyRequest().authenticated().and().oauth2Login(oauth2Login ->
+                oauth2Login.userInfoEndpoint(userInfoEndpoint ->
+                        userInfoEndpoint.oidcUserService(oidcUserService)
+                ).defaultSuccessUrl("/weather-map")
+        )
                 .logout(logout -> logout.logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .addLogoutHandler(keycloakLogoutHandler))
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+
 
         return http.build();
     }

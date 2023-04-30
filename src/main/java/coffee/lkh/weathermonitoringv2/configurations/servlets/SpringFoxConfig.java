@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.configurations;
+package coffee.lkh.weathermonitoringv2.configurations.servlets;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,27 +23,12 @@ import java.util.List;
 public class SpringFoxConfig {
     @Bean
     public Docket api() {
-       var grants=  new ArrayList<GrantType>(){
-            {new GrantType("authorization_code");}
-        };
-       var scopes = new ArrayList<AuthorizationScope>(){
-           {new AuthorizationScope("email", "Email login scope");}
-           {new AuthorizationScope("openid", "OpenID login scope");}
-           {new AuthorizationScope("profile", "Profile login scope");}
-       };
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
-                .securityContexts(Arrays.asList(securityContext()))
-                .securitySchemes(Arrays.asList(apiKey()))
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
-                .build().securitySchemes(Arrays.asList(new OAuthBuilder()
-                        .name("OAuth2")
-                        .scopes(scopes)
-                        .grantTypes(grants)
-                        .build()))
-                .securityContexts(Arrays.asList(securityContext()));
+                .build();
     }
 
     private ApiInfo apiInfo() {
@@ -58,18 +43,5 @@ public class SpringFoxConfig {
                 Collections.emptyList());
     }
 
-    private ApiKey apiKey() {
-        return new ApiKey("JWT", "Authorization", "header");
-    }
 
-    private SecurityContext securityContext() {
-        return SecurityContext.builder().securityReferences(defaultAuth()).build();
-    }
-
-    private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-        authorizationScopes[0] = authorizationScope;
-        return Arrays.asList(new SecurityReference("JWT", authorizationScopes));
-    }
 }

@@ -1,4 +1,4 @@
-package coffee.lkh.weathermonitoringv2.models.remote;
+package coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,9 +15,7 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "datum")
 @TimeSeries(collation = "datum", timeField = "forecast_date" )
-@CompoundIndexes({
-        @CompoundIndex(name = "location_index", def = "{'location' : '2dsphere'}")
-})
+@CompoundIndex(def = "{'location': '2dsphere'}")
 public class Datum{
 
     public String getId() {
@@ -33,7 +31,7 @@ public class Datum{
         return this.ts; }
     public void setTs(String ts) {
         this.ts = ts; }
-    String ts;
+    private String ts;
     @JsonProperty("timestamp_local")
     public Date getLocalMeasureDate() {
         return this.timestamp_local; }
@@ -41,14 +39,14 @@ public class Datum{
         this.timestamp_local = timestamp_local; }
 
     @Transient
-    Date timestamp_local;
+    private Date timestamp_local;
     @JsonProperty("timestamp_utc")
     public Date getMeasureDate() {
         return this.timestamp_utc; }
     public void setMeasureDate(Date timestamp_utc) {
         this.timestamp_utc = timestamp_utc; }
     @Transient
-    Date timestamp_utc;
+    private Date timestamp_utc;
     @JsonProperty("datetime")
     public Date  getDatetime() {
         return this.datetime; }
@@ -57,73 +55,73 @@ public class Datum{
         this.datetime = datetime; }
 
     @Field("forecast_date")
-    Date  datetime;
+    private Date  datetime;
     @JsonProperty("snow")
     public double getSnow() {
         return this.snow; }
     public void setSnow(double snow) {
         this.snow = snow; }
-    double snow;
+    private double snow;
     @JsonProperty("snow_depth")
     public int getSnow_depth() {
         return this.snow_depth; }
     public void setSnow_depth(int snow_depth) {
         this.snow_depth = snow_depth; }
-    int snow_depth;
+    private int snow_depth;
     @JsonProperty("precip")
     public double getPrecip() {
         return this.precip; }
     public void setPrecip(double precip) {
         this.precip = precip; }
-    double precip;
+    private double precip;
     @JsonProperty("temp")
     public int getTemp() {
         return this.temp; }
     public void setTemp(int temp) {
         this.temp = temp; }
-    int temp;
+    private int temp;
     @JsonProperty("dewpt")
     public int getDewpt() {
         return this.dewpt; }
     public void setDewpt(int dewpt) {
         this.dewpt = dewpt; }
-    int dewpt;
+    private int dewpt;
     @JsonProperty("max_temp")
     public double getMax_temp() {
         return this.max_temp; }
     public void setMax_temp(double max_temp) {
         this.max_temp = max_temp; }
-    double max_temp;
+    private double max_temp;
     @JsonProperty("min_temp")
     public double getMin_temp() {
         return this.min_temp; }
     public void setMin_temp(double min_temp) {
         this.min_temp = min_temp; }
-    double min_temp;
+    private double min_temp;
     @JsonProperty("app_max_temp")
     public int getApp_max_temp() {
         return this.app_max_temp; }
     public void setApp_max_temp(int app_max_temp) {
         this.app_max_temp = app_max_temp; }
-    int app_max_temp;
+    private int app_max_temp;
     @JsonProperty("app_min_temp")
     public int getApp_min_temp() {
         return this.app_min_temp; }
     public void setApp_min_temp(int app_min_temp) {
         this.app_min_temp = app_min_temp; }
-    int app_min_temp;
+    private int app_min_temp;
     @JsonProperty("rh")
     public int getRh() {
         return this.rh; }
     public void setRh(int rh) {
         this.rh = rh; }
-    int rh;
+    private int rh;
     @JsonProperty("clouds")
     public int getClouds() {
         return this.clouds; }
     public void setClouds(int clouds) {
         this.clouds = clouds; }
-    int clouds;
+    private int clouds;
     @JsonProperty("weather")
     public Weather getWeather() {
         return this.weather; }
@@ -131,7 +129,7 @@ public class Datum{
         this.weather = weather; }
 
     @DBRef
-    Weather weather;
+    private Weather weather;
     @JsonProperty("slp")
     public double getSlp() {
         return this.slp; }
@@ -139,7 +137,7 @@ public class Datum{
         this.slp = slp; }
 
     @Field("slp")
-    double slp;
+    private double slp;
     @JsonProperty("pres")
     public int getPres() {
         return this.pres; }
@@ -147,7 +145,7 @@ public class Datum{
         this.pres = pres; }
 
     @Field("pres")
-    int pres;
+    private int pres;
     @JsonProperty("uv")
     public double getUv() {
         return this.uv; }
@@ -155,7 +153,7 @@ public class Datum{
         this.uv = uv; }
 
     @Field("uv")
-    double uv;
+    private double uv;
     @JsonProperty("max_dhi")
     public String getMax_dhi() {
         return this.max_dhi; }
@@ -163,7 +161,7 @@ public class Datum{
         this.max_dhi = max_dhi; }
 
     @Field("max_dhi")
-    String max_dhi;
+    private String max_dhi;
     @JsonProperty("vis")
     public int getVis() {
         return this.vis; }
@@ -171,7 +169,7 @@ public class Datum{
         this.vis = vis; }
 
     @Field("vis")
-    int vis;
+    private int vis;
     @JsonProperty("pop")
     public int getPop() {
         return this.pop; }
@@ -179,7 +177,7 @@ public class Datum{
         this.pop = pop; }
 
     @Field("pop")
-    int pop;
+    private int pop;
     @JsonProperty("moon_phase")
     public double getMoon_phase() {
         return this.moon_phase; }
@@ -187,7 +185,7 @@ public class Datum{
         this.moon_phase = moon_phase; }
 
     @Field("moon_phase")
-    double moon_phase;
+    private double moon_phase;
     @JsonProperty("sunrise_ts")
     public int getSunrise_ts() {
         return this.sunrise_ts; }
@@ -195,7 +193,7 @@ public class Datum{
         this.sunrise_ts = sunrise_ts; }
 
     @Field("sunrise_ts")
-    int sunrise_ts;
+    private int sunrise_ts;
     @JsonProperty("sunset_ts")
     public int getSunset_ts() {
         return this.sunset_ts; }
@@ -203,7 +201,7 @@ public class Datum{
         this.sunset_ts = sunset_ts; }
 
     @Field("sunset_ts")
-    int sunset_ts;
+    private int sunset_ts;
     @JsonProperty("moonrise_ts")
     public int getMoonrise_ts() {
         return this.moonrise_ts; }
@@ -211,7 +209,7 @@ public class Datum{
         this.moonrise_ts = moonrise_ts; }
 
     @Field("moonrise_ts")
-    int moonrise_ts;
+    private int moonrise_ts;
     @JsonProperty("moonset_ts")
     public int getMoonset_ts() {
         return this.moonset_ts; }
@@ -219,7 +217,7 @@ public class Datum{
         this.moonset_ts = moonset_ts; }
 
     @Field("moonset_ts")
-    int moonset_ts;
+    private int moonset_ts;
     @JsonProperty("pod")
     public String getPod() {
         return this.pod; }
@@ -227,7 +225,7 @@ public class Datum{
         this.pod = pod; }
 
     @Field("pod")
-    String pod;
+    private String pod;
     @JsonProperty("wind_spd")
     public double getWind_spd() {
         return this.wind_spd; }
@@ -235,7 +233,7 @@ public class Datum{
         this.wind_spd = wind_spd; }
 
     @Field("wind_spd")
-    double wind_spd;
+    private double wind_spd;
     @JsonProperty("wind_dir")
     public int getWind_dir() {
         return this.wind_dir; }
@@ -243,7 +241,7 @@ public class Datum{
         this.wind_dir = wind_dir; }
 
     @Field("wind_dir")
-    int wind_dir;
+    private int wind_dir;
     @JsonProperty("wind_cdir")
     public String getWind_cdir() {
         return this.wind_cdir; }
@@ -251,7 +249,7 @@ public class Datum{
         this.wind_cdir = wind_cdir; }
 
     @Field("wind_cdir")
-    String wind_cdir;
+    private String wind_cdir;
     @JsonProperty("wind_cdir_full")
     public String getWind_cdir_full() {
         return this.wind_cdir_full; }
@@ -259,7 +257,7 @@ public class Datum{
         this.wind_cdir_full = wind_cdir_full; }
 
     @Field("wind_cdir_full")
-    String wind_cdir_full;
+    private String wind_cdir_full;
 
     public double[] getLocation() {
         return location;
@@ -270,5 +268,5 @@ public class Datum{
     }
 
     @Field("location")
-    public double[] location;
+    private double[] location;
 }

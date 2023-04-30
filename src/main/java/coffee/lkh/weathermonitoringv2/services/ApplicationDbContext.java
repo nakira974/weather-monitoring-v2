@@ -1,17 +1,17 @@
 package coffee.lkh.weathermonitoringv2.services;
 
-import coffee.lkh.weathermonitoringv2.models.remote.CityWeatherForecasts;
-import coffee.lkh.weathermonitoringv2.models.remote.Datum;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.CityWeatherForecasts;
+import coffee.lkh.weathermonitoringv2.models.remote.weatherbitapi.Datum;
 import coffee.lkh.weathermonitoringv2.repositories.IDatumRepository;
 import coffee.lkh.weathermonitoringv2.repositories.IWeatherRepository;
 import coffee.lkh.weathermonitoringv2.repositories.ICityWeatherForecastsRepository;
 import coffee.lkh.weathermonitoringv2.services.base.IDbContext;
+import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -25,33 +25,60 @@ public class ApplicationDbContext implements IDbContext {
     final IWeatherRepository _weatherRepository;
     final IDatumRepository _datumRepository;
 
+    protected final IHttpClientService _httpClientService;
+
     private final ThreadPoolExecutor _executor;
 
-    public ApplicationDbContext(ICityWeatherForecastsRepository weatherForecastsRepository, IWeatherRepository weatherRepository, IDatumRepository datumRepository) {
+    public ApplicationDbContext(ICityWeatherForecastsRepository weatherForecastsRepository, IWeatherRepository weatherRepository, IDatumRepository datumRepository, IHttpClientService httpClientService) {
         _weatherRepository = weatherRepository;
         _datumRepository = datumRepository;
+        _httpClientService = httpClientService;
         _logger = LoggerFactory.getLogger(IDbContext.class);
         _weatherForecastsRepository = weatherForecastsRepository;
-        _executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        _executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
     }
 
     public Future<Boolean> insertOrUpdateForecastsAsync(CityWeatherForecasts forecasts){
         Future<Boolean> result = null;
         try{
+
             result = _executor.submit(() -> {
+                var fetchCityInfoTask = _httpClientService.getCityInfoAsync(new double[]{Double.parseDouble(forecasts.getLon()), Double.parseDouble(forecasts.getLat())});
+                var cityInfo = fetchCityInfoTask.get();
+                double radius = 15;
                 var isInserted = Boolean.FALSE;
                 try{
                     var forecastsToInsert = new ArrayList<Datum>();
+                    //Avant le foreach un peu d'opti je recupère mon future
+                    if(cityInfo.isPresent()) radius = cityInfo.get().stream().findFirst().orElseThrow().getDistance();
                     for(var data : forecasts.getData()){
                         //We linked our data by date and location in addition to link the ID in mongodb...
                         data.getWeather().setMeasureDate(data.getDatetime());
                         data.getWeather().setLocation(forecasts.getLon(), forecasts.getLat());
                         data.setLocation(forecasts.getLon(), forecasts.getLat());
                         //Check if entities are still existing
-                        var registeredWeather = _weatherRepository.findDistinctByLocationAndForecastDate(data.getWeather().getLocation()[0], data.getWeather().getLocation()[1],data.getWeather().getMeasureDate());
-                        data.setWeather(Objects.requireNonNullElseGet(registeredWeather, () -> _weatherRepository.save(data.getWeather())));
-                        var registeredData = _datumRepository.findDistinctByLocationAndForecastDate(data.getLocation()[0], data.getLocation()[1], data.getMeasureDate());
-                        if(registeredData == null)forecastsToInsert.add(data);
+                        var longitude = data.getWeather().getLocation()[0];
+                        var latitude = data.getWeather().getLocation()[1];
+                        ArrayList<Double> location = new ArrayList<Double>() {};
+                        location.add(longitude);
+                        location.add(latitude);
+
+                        var registeredWeather = _weatherRepository.findUniqueByForecastDateAndLocation(data.getWeather().getMeasureDate(), location , radius);
+                        //If no forecast at this location at this time then we save into db
+                        if(registeredWeather.isEmpty())
+                            data.setWeather(_weatherRepository.save(data.getWeather()));
+                        //If a forecast is present at the same place at the same time then
+                        else
+                            data.setWeather(registeredWeather.get());
+
+                         longitude = data.getWeather().getLocation()[0];
+                         latitude = data.getWeather().getLocation()[1];
+                         location = new ArrayList<Double>() {};
+                         location.add(longitude);
+                         location.add(latitude);
+                        var registeredData = _datumRepository.findUniqueByForecastDateAndLocation(data.getMeasureDate(), location, radius);
+                       if(registeredData.isEmpty())
+                           forecastsToInsert.add(data);
                     }
                     var insertedDatum = _datumRepository.saveAll(forecastsToInsert);
                     forecasts.setData(insertedDatum);
@@ -62,7 +89,7 @@ public class ApplicationDbContext implements IDbContext {
                     if(registeredCityForecasts == null){
                         forecasts.setLocation();
                         registeredCityForecasts=  _weatherForecastsRepository.save(forecasts);
-                        _logger.info(String.format("Entity %s %s %s has been inserted",
+                        _logger.info(String.format("\u001B[32m Entity %s %s %s has been inserted\u001B[0m",
                                 registeredCityForecasts.getCity_name(),
                                 registeredCityForecasts.getCountry_code(),
                                 registeredCityForecasts.getState_code()));
@@ -73,7 +100,7 @@ public class ApplicationDbContext implements IDbContext {
                         var oldData = registeredCityForecasts.getData();
                         oldData.addAll(forecasts.getData());
                         _weatherForecastsRepository.save(registeredCityForecasts);
-                        _logger.info(String.format("Entity %s %s %s has been updated",
+                        _logger.info(String.format("\u001B[36m Entity %s %s %s has been updated\u001B[0m",
                                 registeredCityForecasts.getCity_name(),
                                 registeredCityForecasts.getCountry_code(),
                                 registeredCityForecasts.getState_code()));
@@ -81,12 +108,12 @@ public class ApplicationDbContext implements IDbContext {
 
                     isInserted = Boolean.TRUE;
                 }catch (Exception ex){
-                    _logger.error(String.format("Can't fetch %s %s weather forecasts!", forecasts.getCity_name(), forecasts.getCountry_code()));
+                    _logger.error(String.format("\u001B[31m Can't select  %s %s weather forecasts in mongodb!\u001B[0m", forecasts.getCity_name(), forecasts.getCountry_code()));
                 }
                 return isInserted;
             });
         }catch (Exception ex){
-            _logger.error("Thread pool executor error in IDbService implementation");
+            _logger.error("\u001B[31m Thread pool executor error in IDbService implementation\u001B[0m");
         }
         return result;
     }
@@ -100,36 +127,36 @@ public class ApplicationDbContext implements IDbContext {
                 try {
 
                     var registeredEntity = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
-                    if(registeredEntity.isEmpty()) throw  new Exception("Could not find entity to delete !");
+                    if(registeredEntity.isEmpty()) throw  new Exception("\u001B[31m Could not find entity to delete ! \u001B[0m");
                     registeredEntity.get().getData().forEach(datum -> {
                         try{
                             _weatherRepository.delete(datum.getWeather());
-                            _logger.warn(String.format("Entity 'weather' %s has been deleted", datum.getWeather().getId()));
+                            _logger.warn(String.format("\u001B[34m Entity 'weather' %s has been deleted\u001B[0m", datum.getWeather().getId()));
                         }catch (Exception ex){
-                            _logger.error(String.format("No 'weather' related entity has been deleted for ID : %s", datum.getId()));
+                            _logger.error(String.format("\u001B[31m No 'weather' related entity has been deleted for ID : %s \u001B[0m", datum.getId()));
                         }
                         try{
                             _datumRepository.delete(datum);
-                            _logger.warn(String.format("Entity 'datum' %s has been deleted", datum.getId()));
+                            _logger.warn(String.format("\u001B[34m Entity 'datum' %s has been deleted\u001B[0m", datum.getId()));
                         }catch (Exception ex){
-                            _logger.error(String.format("No 'datum' related entity has been deleted for ID : %s", registeredEntity.get().getId()));
+                            _logger.error(String.format("\u001B[31m No 'datum' related entity has been deleted for ID : %s \u001B[0m", registeredEntity.get().getId()));
                         }
                     });
                     try {
                         _weatherForecastsRepository.delete(registeredEntity.get());
-                        _logger.warn(String.format("Entity 'weather' %s has been deleted", registeredEntity.get().getId()));
+                        _logger.warn(String.format("\u001B[34m Entity 'weather' %s has been deleted", registeredEntity.get().getId()));
                     }catch (Exception ex){
-                        _logger.error(String.format("No 'city_weather_forecasts' entity has been deleted for ID : %s", registeredEntity.get().getId()));
+                        _logger.error(String.format("\u001B[31m No 'city_weather_forecasts' entity has been deleted for ID : %s \u001B[0m", registeredEntity.get().getId()));
                     }
                     isDeleted = Boolean.TRUE;
                 }catch (Exception ex){
-                    _logger.error("Error while deleting entity!");
+                    _logger.error("\u001B[31m Error while deleting entity!\u001B[0m");
                 }
                 return isDeleted;
             });
 
             }catch (Exception ex){
-            _logger.warn("Thread pool executor in IDbService");
+            _logger.warn("\u001B[31m Thread pool executor in IDbService\u001B[0m");
         }
         return result;
     }
@@ -142,13 +169,15 @@ public class ApplicationDbContext implements IDbContext {
                 Optional<CityWeatherForecasts> forecasts = Optional.empty();
                 try{
                     forecasts = state.map(s -> _weatherForecastsRepository.findDistinctByCity_nameAndCountry_codeAndState_code(city, country, s)).or(() -> Optional.ofNullable(_weatherForecastsRepository.findDistinctByCity_nameAndCountry_code(city, country)));
-              }  catch (Exception ex){
-                  _logger.error("Error while selecting entity!");
+                    forecasts.ifPresent(cityWeatherForecasts -> _logger.warn(String.format("\u001B[36m Selected city: %s country: %s state: %S information! \u001B[0m", cityWeatherForecasts.getCity_name(), cityWeatherForecasts.getCountry_code(), cityWeatherForecasts.getState_code())));
+
+                }  catch (Exception ex){
+                  _logger.error("\u001B[31m Error while selecting entity!\u001B[0m");
               }
                 return forecasts;
             });
         }catch (Exception ex){
-            _logger.warn("Thread pool executor in IDbService");
+            _logger.warn("\u001B[31m Thread pool executor in IDbService\u001B[0m");
         }
         return result;
     }
