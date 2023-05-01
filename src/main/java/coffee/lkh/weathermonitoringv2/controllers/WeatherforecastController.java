@@ -32,7 +32,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
-    @CrossOrigin("http://localhost:4200/*")
+    @CrossOrigin
     @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public Map<String, String> home(@NotNull @AuthenticationPrincipal DefaultOAuth2User user) {
@@ -53,7 +53,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping(value = "/weather")
-    @CrossOrigin("http://localhost:4200/*")
+    @CrossOrigin
     @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Entity selected correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<CityWeatherForecastDto>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
@@ -82,7 +82,7 @@ public class WeatherforecastController {
     }
 
     @PatchMapping(value = "/weather")
-    @CrossOrigin("http://localhost:4200/*")
+    @CrossOrigin
     @ResponseStatus(code = HttpStatus.CREATED, reason = "Entity updated correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<CityWeatherForecastDto>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
