@@ -1,0 +1,3 @@
+[submodule "weather-monitoring-frontend"]
+	path = weather-monitoring-frontend
+	url = https://github.com/nakira974/weather-monitoring-frontend

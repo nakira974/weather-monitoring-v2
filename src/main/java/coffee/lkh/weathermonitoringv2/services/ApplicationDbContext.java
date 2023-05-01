@@ -134,12 +134,14 @@ public class ApplicationDbContext implements IDbContext {
                             _logger.warn(String.format("\u001B[34m Entity 'weather' %s has been deleted\u001B[0m", datum.getWeather().getId()));
                         }catch (Exception ex){
                             _logger.error(String.format("\u001B[31m No 'weather' related entity has been deleted for ID : %s \u001B[0m", datum.getId()));
+                            _logger.error(ex.getMessage());
                         }
                         try{
                             _datumRepository.delete(datum);
                             _logger.warn(String.format("\u001B[34m Entity 'datum' %s has been deleted\u001B[0m", datum.getId()));
                         }catch (Exception ex){
                             _logger.error(String.format("\u001B[31m No 'datum' related entity has been deleted for ID : %s \u001B[0m", registeredEntity.get().getId()));
+                            _logger.error(ex.getMessage());
                         }
                     });
                     try {
@@ -147,16 +149,19 @@ public class ApplicationDbContext implements IDbContext {
                         _logger.warn(String.format("\u001B[34m Entity 'weather' %s has been deleted", registeredEntity.get().getId()));
                     }catch (Exception ex){
                         _logger.error(String.format("\u001B[31m No 'city_weather_forecasts' entity has been deleted for ID : %s \u001B[0m", registeredEntity.get().getId()));
+                        _logger.error(ex.getMessage());
                     }
                     isDeleted = Boolean.TRUE;
                 }catch (Exception ex){
                     _logger.error("\u001B[31m Error while deleting entity!\u001B[0m");
+                    _logger.error(ex.getMessage());
                 }
                 return isDeleted;
             });
 
             }catch (Exception ex){
             _logger.warn("\u001B[31m Thread pool executor in IDbService\u001B[0m");
+            _logger.error(ex.getMessage());
         }
         return result;
     }
@@ -173,6 +178,7 @@ public class ApplicationDbContext implements IDbContext {
 
                 }  catch (Exception ex){
                   _logger.error("\u001B[31m Error while selecting entity!\u001B[0m");
+                  _logger.error(ex.getMessage());
               }
                 return forecasts;
             });
