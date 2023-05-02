@@ -53,11 +53,26 @@ services:
       - "25015:27017"
     networks:
       - local-keycloak
+  weather-monitoring-api:
+    depends_on:
+      - app-db
+      - keycloak
+    build :
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+          "server.ssl.key-store": "/srv/app/weathermonitoring/certs/weathermonitoring.keystore.p12",
+        }'
+    networks:
+      - local-keycloak
+
 
 networks:
   local-keycloak:
-  elk:
-    driver: bridge
 
 volumes:
   setup:

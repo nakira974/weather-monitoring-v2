@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: coffee.lkh.weathermonitoringv2.WeatherMonitoringV2Applicatio
- n
-
