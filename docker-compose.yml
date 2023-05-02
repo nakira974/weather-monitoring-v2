@@ -66,6 +66,19 @@ services:
     networks:
       - local-keycloak
 
+  weather-monitoring-frontend:
+    depends_on:
+      - weather-monitoring-api
+      - keycloak
+    build: weather-monitoring-frontend
+
+    volumes:
+      - /srv/app/weathermonitoring/certs/privkey.pem:/app/certs/privkey.pem
+      - /srv/app/weathermonitoring/certs/cert.pem:/app/certs/cert.pem
+    ports:
+      - "4200:4200"
+    networks:
+      - local-keycloak
 
 networks:
   local-keycloak:
