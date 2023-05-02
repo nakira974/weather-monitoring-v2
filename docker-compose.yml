@@ -1,6 +1,8 @@
 version: '3.9'
 
 services:
+
+  #POSTGRES AUTHENTICATION SERVER'S DATABASE SERVER
   postgres:
     image: postgres:13.2
     container_name: local_postgres
@@ -16,6 +18,7 @@ services:
     ports:
       - "5432:5432"
 
+  #KEYCLOAK AUTHENTICATION SERVER
   keycloak:
     depends_on:
       - postgres
@@ -39,7 +42,8 @@ services:
     networks:
       - local-keycloak
 
-  app-db:
+  #MONGODB API'S DATABASE SERVER
+  api-db:
     image: mongo:latest
     container_name: local_mongo
     restart: unless-stopped
@@ -53,9 +57,11 @@ services:
       - "25015:27017"
     networks:
       - local-keycloak
+
+  #JAVA SPRINGBOOT API
   weather-monitoring-api:
     depends_on:
-      - app-db
+      - api-db
       - keycloak
     build : .
 
@@ -66,6 +72,7 @@ services:
     networks:
       - local-keycloak
 
+  #ANGULAR NPM FRONTEND
   weather-monitoring-frontend:
     depends_on:
       - weather-monitoring-api
@@ -76,9 +83,11 @@ services:
     networks:
       - local-keycloak
 
+#INTERNAL NETWORK CONFIGURATION
 networks:
   local-keycloak:
 
+#VOLUMES CONFIGURATION
 volumes:
   setup:
   elasticsearch:

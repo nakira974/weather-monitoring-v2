@@ -42,7 +42,7 @@ services:
       - local-keycloak
 
   #MONGODB API'S DATABASE SERVER
-  app-db:
+  api-db:
     image: mongo:latest
     container_name: local_mongo
     restart: unless-stopped
@@ -61,7 +61,7 @@ services:
   weather-monitoring-api:
     image: nakiradu77/weather-monitoring-api:1.1
     depends_on:
-      - app-db
+      - api-db
       - keycloak
 
     volumes:
