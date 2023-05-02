@@ -38,3 +38,5 @@ src/main/resources/weathermonitoring-realm.json
 ### VS Code ###
 .vscode/
 
+/weather-monitoring-frontend/certs/
+/weather-monitoring-frontend/certs/cert.pem

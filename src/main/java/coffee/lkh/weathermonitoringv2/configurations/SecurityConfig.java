@@ -94,7 +94,7 @@ public class SecurityConfig {
                         .addLogoutHandler(keycloakLogoutHandler))
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
-
+        http.cors();
         return http.build();
     }
 }

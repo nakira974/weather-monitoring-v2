@@ -12,6 +12,7 @@ import coffee.lkh.weathermonitoringv2.models.exceptions.WeatherforecastsNotFound
 import coffee.lkh.weathermonitoringv2.services.base.IHttpClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -33,13 +34,12 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
-
     public Map<String, String> home(@NotNull @AuthenticationPrincipal DefaultOAuth2User user) {
         return Map.of("message", "You are logged in, " + user.getName() + "!");
     }
 
     @DeleteMapping("/weather")
-    
+    @CrossOrigin("https://monitor.lkh.coffee:4200")
     @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<String> deleteWeatherInfo(@RequestParam  String city, @RequestParam  String country, @RequestParam Optional<String> state){
@@ -54,10 +54,9 @@ public class WeatherforecastController {
         }
     }
 
-    @GetMapping(value = "/weather")
-    
-    @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Entity selected correctly")
-    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
+    @GetMapping(value = "/weather", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @CrossOrigin("https://monitor.lkh.coffee:4200")
     public ResponseEntity<List<CityWeatherForecastDto>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var fetchFromMongoTask = _dbContext.selectForecastsAsync(city,country, Optional.empty());
         var result = new ArrayList<CityWeatherForecastDto>();
@@ -84,9 +83,8 @@ public class WeatherforecastController {
     }
 
     @PatchMapping(value = "/weather")
-    
-    @ResponseStatus(code = HttpStatus.CREATED, reason = "Entity updated correctly")
-    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
+    @ResponseBody
+    @CrossOrigin("https://monitor.lkh.coffee:4200")
     public ResponseEntity<List<CityWeatherForecastDto>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
         var result = new ArrayList<CityWeatherForecastDto>();
         try{
