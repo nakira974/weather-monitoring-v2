@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+  #POSTGRES AUTHENTICATION SERVER'S DATABASE SERVER
+  postgres:
+    image: postgres:13.2
+    container_name: local_postgres
+    restart: unless-stopped
+    volumes:
+      - "/srv/docker/keycloak/data/keycloak_db:/var/lib/mysql"
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: maxime
+      POSTGRES_PASSWORD: JesusOurLord0033€
+    networks:
+      - local-keycloak
+    ports:
+      - "5432:5432"
+
+  #KEYCLOAK AUTHENTICATION SERVER
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: local_keycloak
+    volumes:
+      - "/srv/docker/keycloak/data/certs/:/etc/x509/https"
+    environment:
+      KEYCLOAK_HTTP_PORT: 8080
+      KEYCLOAK_HOSTNAME: monitor.lkh.coffee
+      KEYCLOAK_HTTPS_PORT: 8443
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: maxime
+      DB_PASSWORD: JesusOurLord0033€
+    image: jboss/keycloak:16.0.0
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    restart: unless-stopped
+    networks:
+      - local-keycloak
+
+  #MONGODB API'S DATABASE SERVER
+  app-db:
+    image: mongo:latest
+    container_name: local_mongo
+    restart: unless-stopped
+    volumes:
+      - /srv/docker/mongo/data/db:/data/db
+      - /srv/docker/mongo/data/configdb:/data/configdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: maxime
+      MONGO_INITDB_ROOT_PASSWORD: JesusOurLord0033€
+    ports:
+      - "25015:27017"
+    networks:
+      - local-keycloak
+
+  #JAVA SPRINGBOOT API
+  weather-monitoring-api:
+    image: nakiradu77/weather-monitoring-api:1.1
+    depends_on:
+      - app-db
+      - keycloak
+
+    volumes:
+      - /srv/app/weathermonitoring/certs/weathermonitoring.keystore.p12:/app/certs/weathermonitoring.keystore.p12
+    ports:
+      - "8083:8083"
+    networks:
+      - local-keycloak
+
+  #ANGULAR NPM FRONTEND
+  weather-monitoring-frontend:
+    image: nakiradu77/weather-monitoring-frontend:0.3
+    depends_on:
+      - weather-monitoring-api
+      - keycloak
+
+    ports:
+      - "4200:4200"
+    networks:
+      - local-keycloak
+
+
+#INTERNAL NETWORK CONFIGURATION
+networks:
+  local-keycloak:
+
+#VOLUMES CONFIGURATION
+volumes:
+  setup:
+  elasticsearch:
+  mysql_data:
+    driver: local
