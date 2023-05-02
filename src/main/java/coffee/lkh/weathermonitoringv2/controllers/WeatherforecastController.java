@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+
 @RestController("weather_forecasts")
 public class WeatherforecastController {
 
@@ -32,14 +33,15 @@ public class WeatherforecastController {
     }
 
     @GetMapping("/")
-    @CrossOrigin
-    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
-    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
+
     public Map<String, String> home(@NotNull @AuthenticationPrincipal DefaultOAuth2User user) {
         return Map.of("message", "You are logged in, " + user.getName() + "!");
     }
 
     @DeleteMapping("/weather")
+    
+    @ResponseStatus(code = HttpStatus.NO_CONTENT, reason = "Entity deleted correctly")
+    @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<String> deleteWeatherInfo(@RequestParam  String city, @RequestParam  String country, @RequestParam Optional<String> state){
         try {
             var isDelete = _dbContext.deleteForecastsAsync(city, country, state).get();
@@ -53,7 +55,7 @@ public class WeatherforecastController {
     }
 
     @GetMapping(value = "/weather")
-    @CrossOrigin
+    
     @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Entity selected correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<CityWeatherForecastDto>> getWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
@@ -82,7 +84,7 @@ public class WeatherforecastController {
     }
 
     @PatchMapping(value = "/weather")
-    @CrossOrigin
+    
     @ResponseStatus(code = HttpStatus.CREATED, reason = "Entity updated correctly")
     @ExceptionHandler({ WeatherforecastsNotFoundException.class })
     public ResponseEntity<List<CityWeatherForecastDto>> updateWeatherInfo(@RequestParam  String city, @RequestParam  String country, Optional<String> state){
